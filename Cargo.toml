@@ -1,6 +1,6 @@
 [package]
 name = "vec2dim"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Colin Logue <email@colinlogue.me>"]
 edition = "2018"
 license = "MIT"
