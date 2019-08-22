@@ -7,5 +7,6 @@ license = "MIT"
 description = "Two-dimensional array"
 readme = "README.md"
 repository = "https://github.com/colinlogue/vec2dim/"
+documentation = "https://colinlogue.github.io/vec2dim/target/doc/vec2dim/index"
 
 [dependencies]
