@@ -1,0 +1,5 @@
+/*
+!.gitignore
+!target/
+target/*
+!target/doc/
