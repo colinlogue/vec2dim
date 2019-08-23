@@ -15,13 +15,28 @@ impl<T: Default> Vec2d<T> {
     }
 
     /// Adds a new row to the vector and sets all elements of that row to `T::default()`.
+    /// If the array is empty, creates a row of one element.
     pub fn add_row_of_default(&mut self) {
         // pushes a number of elements to data equal to the width
-        // width does not change
+        // width does not change unless array was empty
+        if self.width == 0 { self.width += 1; }
         let size = self.count() + self.width;
         while self.data.len() < size {
             self.data.push(T::default());
         }
+    }
+
+    /// Adds a new column to the array and sets all elements of the column to `T::default()`.
+    pub fn add_col_of_default(&mut self) {
+        // inserts a default item at the position representing the end of each row
+        // note that this position shifts as elements are added
+        let new_width = self.width + 1;
+        let mut idx = self.width;
+        for row in 0..self.count_rows() {
+            self.data.insert(idx, T::default());
+            idx += new_width;
+        }
+        self.width = new_width;
     }
 
     // private methods
@@ -43,32 +58,16 @@ impl<T: Copy> Vec2d<T> {
     /// Creates a new `Vec2d<T>` from an array slice.
     /// The slice must have a length that is divisible by `cols` in order to fill the new array.
     /// The array is filled left to right, top to bottom.
-    pub fn from_slice(cols: usize, arr: &[T]) -> Vec2d<T> {
+    pub fn from(width: usize, arr: &[T]) -> Vec2d<T> {
         let size = arr.len();
-        assert!(size % cols == 0);
+        assert_eq!(size % width, 0);
         let mut data: Vec<T> = Vec::with_capacity(size);
         for idx in 0..size {
             data.push(arr[idx]);
         }
         Vec2d {
-            data: data,
-            width: cols,
-        }
-    }
-
-    /// Creates a new `Vec2d<T>` from an indexable type by copying values up to `size`.
-    /// Note that `size` must be divisible by `cols` or the data will not fill the array.
-    /// The array is filled from left to right, top to bottom.
-    pub fn from_index<U: std::ops::Index<usize, Output=T>>(size: usize, cols: usize, arr: &U) -> Vec2d<T> {
-        // must be rectangular
-        assert!(size % cols == 0);
-        let mut data: Vec<T> = Vec::with_capacity(size);
-        for idx in 0..size {
-            data.push(arr[idx]);
-        }
-        Vec2d {
-            data: data,
-            width: cols,
+            data,
+            width,
         }
     }
 
@@ -163,7 +162,7 @@ impl<T> std::ops::Index<usize> for Vec2d<T> {
 }
 
 impl<T> std::ops::IndexMut<usize> for Vec2d<T> {
-    fn index_mut<'a>(&'a mut self, row: usize) -> &'a mut Self::Output {
+    fn index_mut(&mut self, row: usize) -> &mut Self::Output {
         let start = row * self.width;
         let end = start + self.width;
         &mut self.data[start..end]
@@ -189,9 +188,9 @@ mod tests {
     fn panics_on_mismatched_arr_size() {
         let arr: [i32;4] = [1,2,3,4];
         let slc: &[i32] = &arr[0..3];
-        let _v: Vec2d<i32> = Vec2d::from_slice(2, slc);
+        let _v: Vec2d<i32> = Vec2d::from(2, slc);
         let arr: [i32;5] = [1,2,3,4,5];
-        let _v = Vec2d::from_slice(2, &arr);
+        let _v = Vec2d::from(2, &arr);
     }
 
     #[test]
@@ -199,7 +198,7 @@ mod tests {
         let data: [i32;12] = [1,2,3,4,5,6,7,8,9,10,11,12];
         for divs in 1..13 {
             if 12 % divs == 0 {
-                let _v = Vec2d::from_slice(divs, &data);
+                let _v = Vec2d::from(divs, &data);
                 for row in 0.._v.count_rows() {
                     for col in 0.._v.count_cols() {
                         let idx = row * _v.count_cols() + col;
@@ -208,6 +207,20 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn build_from_defaults() {
+        type DataType = i32;
+        let mut v:Vec2d<DataType> = Vec2d::new();
+        assert_eq!(v.count(), 0);
+        v.add_row_of_default();
+        assert_eq!(v.count_rows(), 1);
+        v.add_row_of_default();
+        v.add_col_of_default();
+        assert_eq!(v.count(), 4);
+        assert_eq!(v.count_rows(), 2);
+        assert_eq!(v.count_cols(), 2);
     }
 
 
