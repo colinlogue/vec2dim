@@ -4,3 +4,5 @@
 *.swo
 Cargo.lock
 /.idea
+/docs
+!/docs/doc
