@@ -1,3 +1,3 @@
 var N = null;var sourcesIndex = {};
-sourcesIndex["vec2dim"] = {"name":"","files":["lib.rs"]};
+sourcesIndex["vec2dim"] = {"name":"","dirs":[],"files":["lib.rs"]};
 createSourceSidebar();
