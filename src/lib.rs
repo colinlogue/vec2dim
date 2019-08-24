@@ -71,6 +71,65 @@ impl<T: Copy> Vec2d<T> {
         }
     }
 
+    /// Inserts a column of data before the columns indicated by `index`.
+    pub fn insert_col(&mut self, index: usize, data: &[T]) {
+        let size: usize = data.len();
+        // Data must have same size as array height
+        if self.width == 0 {
+            self.width = 1;
+            for item in data {
+                self.data.push(*item);
+            }
+        }
+        else {
+            assert_eq!(size, self.count_rows());
+            let mut idx = index;
+            self.width += 1;
+            for row in 0..size {
+                self.data.insert(idx, data[row]);
+                idx += self.width;
+            }
+        }
+    }
+
+    /// Inserts a row of data before the row indicated by `index`. If `index` is `0`, calls
+    /// `push_row(data)`.
+    pub fn insert_row(&mut self, index: usize, data: &[T]) {
+        // If array isn't empty, row length must match width
+        // if it is empty, add the entire data vector as a new row
+        // and set width to the length of the data
+        if self.width > 0 {
+            assert_eq!(self.width, data.len());
+            // currently just pushes items one by one
+            // TODO: implement this more efficiently
+            let mut idx = self.width * index;
+            for item in data {
+                self.data.insert(idx, *item);
+                idx += 1;
+            }
+        }
+        else { self.push_row(data); }
+    }
+
+    /// Adds a new column of data to the right edge of the array. The length of the slice `data`
+    /// must be exactly equal to the height of the array.
+    pub fn push_col(&mut self, data: &[T]) {
+        self.insert_col(self.count_cols(), data);
+    }
+
+    /// Adds a row of data at the bottom of the array. The length of the slice `data` must be
+    /// exactly equal to the array width or the method will panic.
+    pub fn push_row(&mut self, data: &[T]) {
+        // If array isn't empty, row length must match width
+        // if it is empty, add the entire data vector as a new row
+        // and set width to the length of the data
+        if self.width > 0 { assert_eq!(self.width, data.len()); }
+        else { self.width = data.len(); }
+        for item in data {
+            self.data.push(*item);
+        }
+    }
+
     // private
     fn initialize_to_value(mut self, val: T) -> Vec2d<T> {
         let size = self.data.capacity();
@@ -223,6 +282,51 @@ mod tests {
         assert_eq!(v.count_cols(), 2);
     }
 
+    #[test]
+    fn test_data_pushing() {
+        type DataType = i32;
+        let mut v: Vec2d<DataType> = Vec2d::new();
+        let data = [1,2,3,4,5,6,7,8,9,10,11,12];
+        v.push_row(&data[0..1]);
+        v.push_col(&data[1..2]);
+        v.push_row(&data[2..4]);
+        v.push_row(&data[4..6]);
+        v.push_col(&data[6..9]);
+        v.push_col(&data[9..12]);
+        assert_eq!(v.count(), 12);
+        assert_eq!(v.count_rows(), 3);
+        assert_eq!(v.count_cols(), 4);
+        let answers = [1,2,7,10,3,4,8,11,5,6,9,12];
+        let mut idx: usize = 0;
+        for row in 0..v.count_rows() {
+            for col in 0..v.count_cols() {
+                assert_eq!(v[row][col], answers[idx]);
+                idx += 1;
+            }
+        }
+    }
 
-
+    #[test]
+    fn test_data_insertion() {
+        type DataType = i32;
+        let mut v: Vec2d<DataType> = Vec2d::new();
+        let data = [1,2,3,4,5,6,7,8,9,10,11,12];
+        v.insert_row(0,&data[0..1]);
+        v.insert_col(0,&data[1..2]);
+        v.insert_row(1,&data[2..4]);
+        v.insert_row(1, &data[4..6]);
+        v.insert_col(1,&data[6..9]);
+        v.insert_col(3,&data[9..12]);
+        assert_eq!(v.count(), 12);
+        assert_eq!(v.count_rows(), 3);
+        assert_eq!(v.count_cols(), 4);
+        let answers = [2,7,1,10,5,8,6,11,3,9,4,12];
+        let mut idx: usize = 0;
+        for row in 0..v.count_rows() {
+            for col in 0..v.count_cols() {
+                assert_eq!(v[row][col], answers[idx]);
+                idx += 1;
+            }
+        }
+    }
 }
