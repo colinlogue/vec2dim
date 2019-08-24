@@ -32,7 +32,7 @@ impl<T: Default> Vec2d<T> {
         // note that this position shifts as elements are added
         let new_width = self.width + 1;
         let mut idx = self.width;
-        for row in 0..self.count_rows() {
+        for _row in 0..self.count_rows() {
             self.data.insert(idx, T::default());
             idx += new_width;
         }
