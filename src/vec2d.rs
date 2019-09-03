@@ -170,6 +170,16 @@ impl<T> Vec2d<T> {
         Vec2d::new_empty(rows, cols).initialize_from_fn(initializer)
     }
 
+    /// Returns a raw pointer to the underlying vector's buffer.
+    pub fn as_ptr(&self) -> *const T {
+        self.data.as_ptr()
+    }
+
+    /// Returns a reference to the underlying vector.
+    pub fn as_vec(&self) -> &Vec<T> {
+        &self.data
+    }
+
     /// Returns the number of elements in the array.
     /// Equal to the number of rows times the number of columns.
     pub fn count(&self) -> usize {
